@@ -1,0 +1,134 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include "tokens.h"
+
+extern int yylex();
+
+void yyerror(const char* s);
+
+%}
+
+%token T_TAG_START
+%token T_TAG_END
+%token T_TAG_CLOSE
+%token T_SELF_CLOSING
+%token T_ATTRIBUTE
+%token T_ATTRIBUTE_VAL
+%token T_TEXT
+
+%%
+
+xml: root { /* Handle the root of the XML document */ }
+    ;
+
+root: comments start_tag text elements comments end_tag comments
+    | comments self_closing_tag comments
+    ;
+
+elements: element elements
+    | empty
+    ;
+
+element: comments start_tag content end_tag comments
+    | comments self_closing_tag comments
+    ;
+
+content: text content
+    | element content
+    | comments content
+    | empty
+    ;
+
+start_tag: '<' tag_name attributes '>'
+    ;
+
+self_closing_tag: '<' tag_name attributes '/>'
+    ;
+
+end_tag: '</' tag_name '>'
+    ;
+
+comments: comment comments
+    | empty
+    ;
+
+comment: '<!--' alphanumeric_tail_comm '-->'
+    ;
+
+attributes: attribute attributes
+    | empty
+    ;
+
+attribute: attribute_name '=' attribute_value
+    ;
+
+tag_name: alphanumeric
+    ;
+
+attribute_name: alphanumeric
+    ;
+
+text: alphanumeric_tail
+    ;
+
+attribute_value: '"' alphanumeric_tail '"'
+    ;
+
+alphanumeric: letters alphanumeric_tail
+    ;
+
+alphanumeric_tail: alphanumeric_char alphanumeric_tail
+    | empty
+    ;
+
+alphanumeric_char: letters
+    | numbers
+    | symbols
+    ;
+
+alphanumeric_tail_comm: alphanumeric_char_comm alphanumeric_tail_comm
+    | empty
+    ;
+
+alphanumeric_char_comm: letters
+    | numbers
+    | symbols_comm
+    ;
+
+letters: 'a' | 'b' | ... | 'z' | 'A' | 'B' | ... | 'Z'
+    ;
+
+numbers: '0' | '1' | ... | '9'
+    ;
+
+symbols: ':' | '' | '-' | ';' | '+' | ...
+    ;
+
+symbols_comm: ':' | '_' | ';' | '+' | ...
+    ;
+
+empty:
+    ;
+
+%%
+
+void yyerror(const char* s) {
+    fprintf(stderr, "Parser error: %s\n", s);
+    exit(EXIT_FAILURE);
+}
+
+int main(int argc, char *argv[]){
+    if (argc > 1){
+        yyin = fopen(argv[1], "r");
+        if (yyin == NULL){
+            perror ("Error opening file");
+            return -1;
+        }
+    }
+
+    yyparse();
+
+    fclose(yyin);
+    return 0;
+}

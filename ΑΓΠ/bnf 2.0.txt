@@ -1,0 +1,50 @@
+<xml> ::=                           <RelativeLayout> 
+                                    | <LinearLayout>
+<RelativeLayout> ::=                '<RelativeLayout' <widgth-height> <id> <tag-end> <elements> '</RelativeLayout>' 
+                                    | '<RelativeLayout' <widgth-height> <id> <tag-end> '</RelativeLayout>'                               
+                                    | '<RelativeLayout' <widgth-height> <id> <self-closing> 
+<LinearLayout> ::=                  '<LinearLayout' <widgth-height> <id> <orientation> <tag-end> <elements> '</LinearLayout>' 
+                                    | '<LinearLayout' <widgth-height> <orientation> <id> <tag-end> <elements> '</LinearLayout>'
+<elements> ::=                      <element> <elements> 
+                                    | <element> <empty>
+<element> ::=                       <LinearLayout> 
+                                    | <RelativeLayout> 
+                                    | <TextView> 
+                                    | <ImageView> 
+                                    | <Button> 
+                                    | <RadioGroup>  
+<TextView> ::=                      '<TextView' <widgth-height> <text> <id> <textcolor> <self-closing> 
+                                    | '<TextView' <widgth-height> <text> <textcolor> <id> <self-closing>
+<ImageView> ::=                     '<ImageView' <widgth-height> <src> <id> <padding> <self-closing> 
+                                    | '<ImageView' <widgth-height> <src> <padding> <id> <self-closing>
+<Button> ::=                        '<Button' <widgth-height> <text> <id> <padding> <self-closing> 
+                                    | '<Button' <widgth-height> <text> <padding> <id> <self-closing>
+<RadioGroup> ::=                    '<RadioGroup' <widgth-height> <id> <checked-button> <tag-end> <RadioButtonS> <tag-close> 
+                                    | '<RadioGroup' <widgth-height> <checked-button> <id> <tag-end> <RadioButtonS> <tag-close>
+<RadionButtonS> ::=                 <RadioButton/> <RadionButtonS> 
+                                    | <RadioButton/> <empty>
+<RadioButton> ::=                   '<RadioButton' <widgth-height> <text> <id> <self-closing>
+<ProgressBar> ::=                   '<ProgressBar' <widgth-height> <id> <max> <progress> <self-closing> 
+                                    | '<ProgressBar' <widgth-height> <id> <progress> <max> <self-closing> 
+                                    | '<ProgressBar' <widgth-height> <max> <id> <progress> <self-closing> 
+                                    | '<ProgressBar' <widgth-height> <max> <progress> <id> <self-closing> 
+                                    | '<ProgressBar' <widgth-height> <progress> <id> <max> <self-closing> 
+                                    | '<ProgressBar' <widgth-height> <progress> <max> <id> <self-closing>
+<widgth-height> ::=                 'android:layout_width=' <alphanum-num> 'android:layout_height=' <alphanum-num>
+<alphanum-num> ::=                  <alphanum> 
+                                    | <num>
+<id> ::=                            'android:id=' <alphanum>
+<orientation> ::=                   'android:orientation=' <alphanum>
+<text> ::=                          'android:text=' <alphanum>
+<textcolor> ::=                     'android:textColor=' <alphanum>
+<src> ::=                           'android:src=' <alphanum>
+<padding> ::=                       'android:padding=' <num>
+<checked-button> :: =               'android:checkedButton=' <alphanum>
+<tag-end> ::=                       '>'
+<self-closing> ::=                  '/>'
+<alphanum> ::=                      '"'<alphanum-tail> <alphanum> '"'
+                                    | '"' <alphanum-tail> <empty> '"'     
+<alphanum-tail> ::=                 a|b|c|.....|Z|0|1|2|3|.....|9|(any symbol except ')              
+<num> ::=                           '"' <num-tail> <num> '"'
+                                    | '"' <num_tail> <empty> '"'
+<num-tail> ::=                      0|1|2|3|4....|9                                    

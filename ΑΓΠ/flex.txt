@@ -1,0 +1,121 @@
+%{
+
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include "tokens.h"
+
+    void token_print(int token_id);
+
+%}
+
+%option noyywrap
+%option yylineno
+
+DIGIT               [0-9]
+LETTER              [a-zA-Z]
+ALPHANUM            {LETTER}|{DIGIT}
+TOKENID             {LETTER}[^<>/\ \t\n]*
+TAG_START           "<"{TOKENID}
+TAG_END             ">"
+TAG_CLOSE           "</"{TOKENID}">"
+SELF_CLOSING        "<"{TOKENID}"/>"
+ATTRIBUTE           (" "|\t){TOKENID}"="
+ATTRIBUTE_VAL       """{ALPHANUM}+"""
+COMMENT             "<!--"[^-]"-->"
+TEXT                [^<> \t\r\n][^<>]
+
+
+%%
+
+{TAG_START}         { token_print(T_TAG_START); return T_TAG_START; }
+{TAG_END}           { token_print(T_TAG_END); return T_TAG_END; }
+{TAG_CLOSE}         { token_print(T_TAG_CLOSE); return T_TAG_CLOSE; }
+{SELF_CLOSING}      { token_print(T_SELF_CLOSING); return T_SELF_CLOSING; }
+{ATTRIBUTE}         { token_print(T_ATTRIBUTE); return T_ATTRIBUTE; }
+{ATTRIBUTE_VAL}     { token_print(T_ATTRIBUTE_VAL); return T_ATTRIBUTE_VAL; }
+{COMMENT}           {/ignore/}
+{TEXT}              { token_print(T_TEXT); return T_TEXT; }
+
+
+" "                 {/ignore/}
+[\n]                {/ignore/}
+[\t]                {/ignore/}
+[\r\n]              {/ignore/}
+.                   {printf("Uknown\n"); }
+<<EOF>>             {return 0; }
+
+%%
+
+int main(int argc, char *argv[]){
+    int token;
+    if (argc > 1){
+        yyin = fopen(argv[1], "r");
+        if (yyin == NULL){
+            perror ("Error opening file");
+            return -1;
+        }
+    }
+
+    do {
+        token = yylex();
+    }while(token != 0);
+
+    fclose(yyin);
+    yyterminate();
+}
+
+void token_print(int token_id) {
+    printf("Found token %s (%d) at line %d\n", yytext, token_id, yylineno);
+}
+#define T_EOF               0
+#define T_TAG_START         1
+#define T_TAG_END           2
+#define T_TAG_CLOSE         3
+#define T_SELF_CLOSING      4
+#define T_ATTRIBUTE         5
+#define T_ATTRIBUTE_VAL     6
+#define T_TEXT              7
+<library name="MyLibrary">
+  <book isbn="9780123459">
+  <!-- sdfbnb THIS IS a comment " im a comment! -->
+    <title>The Catcher in the Rye</title>
+    <author>J.D. Salinger</author>
+    <published_year>1951</published_year>
+  </book>
+  <book isbn="978-0-987654-32-1">
+    <title>To Kill a Mockingbird</title>
+    <author>Harper Lee</author>
+    <published_year>1960</published_year>
+  </book>
+  <magazine id="123" category="Entertainment">
+    <title>Entertainment Weekly</title>
+    <issue>August 2023</issue>
+  </magazine>
+</library>
+<xml> ::= <root>
+<root> ::= <comments> <start-tag> <text> <elements> <comments> <end-tag> <comments> | <comments> <self-closing-tag> <comments>
+<elements> ::= <element> <elements> | <empty>
+<element> ::= <comments> <start-tag> <content> <end-tag> <comments> | <comments> <self-closing-tag> <comments>
+<content> ::= <text> <content> | <element> <content> | <comments> <content> | <empty>
+<start-tag> ::= '<' <tag-name> <attributes> '>'
+<self-closing-tag> ::= '<' <tag-name> <attributes> '/>'
+<end-tag> ::= '</' <tag-name> '>'
+<comments> ::= <comment> <comments> | <empty>
+<comment> ::= <empty> |'<!--' <alphanumeric_tail_comm> '-->'
+<attributes> ::= <attribute> <attributes> | <empty>
+<attribute> ::= <attribute-name> '=' <attribute_value>
+<tag-name> ::= <alphanumeric> 
+<attribute-name> ::= <alphanumeric> 
+<text> ::= <alphanumeric_tail>
+<attribute_value> ::= '"' <alphanumeric_tail> '"'
+<alphanumeric> ::= <letters> <alphanumeric_tail>
+<alphanumeric_tail> ::= <alphanumeric_char> <alphanumeric_tail> | <empty>
+<alphanumeric_char> ::= <letters> | <numbers> | <symbols>
+<alphanumeric_tail_comm> ::= <alphanumeric_char_comm> <alphanumeric_tail_comm> | <empty>
+<alphanumeric_charcomm> ::= <letters> | <numbers> | <symbolscomm>
+<letters> ::= a|b|...|z|A|B|...|Z
+<numbers> ::= 0|1|...|9
+<symbols> ::= ':'|''|'-'|';'|'+'|...
+<symbolscomm> ::= ':'|'_'|';'|'+'|...
+
+

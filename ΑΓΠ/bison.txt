@@ -1,0 +1,83 @@
+%{
+
+    #include <stdio.h>
+    #include <stdlib.h>
+
+    extern FILE *yyin;
+    extern int yylex(); 
+    extern void yyerror(const char* err);
+    
+%}  
+
+%error-verbose
+
+%token T_TAG_START                  "Start of element"
+%token T_TAG_END                    "End of element"
+%token T_TAG_CLOSE                  "Closing tag"
+%token T_SELF_CLOSING               "Self closing tag"
+%token T_ATTRIBUTE                  "Attribute"
+%token T_ATTRIBUTE_VAL              "Attribute value"
+%token T_TEXT                       "Text"
+%token T_COMMENT                    "Comment"
+
+%token T_EOF               0        "End of file"
+
+
+%%
+
+
+xml :                       root
+
+root :                      comments start-tag text elements comments end-tag comments
+                            |  comments self-closing-tag comments
+
+elements :                  element elements
+                            | %empty
+
+element :                   comments start-tag content end-tag comments 
+                            | comments self-closing-tag comments
+
+content :                   text content
+                            | element content
+                            | comments content 
+                            | %empty
+
+start-tag :                 T_TAG_START attributes T_TAG_END
+
+self-closing-tag :          T_SELF_CLOSING
+
+end-tag :                   T_TAG_CLOSE
+
+comments :                  comment comments 
+                            | %empty
+
+comment :                   %empty 
+                            |T_COMMENT
+
+attributes :                attribute attributes
+                            | %empty
+
+attribute :                 T_ATTRIBUTE T_ATTRIBUTE_VAL
+
+text :                      T_TEXT
+                            | %empty
+
+%%
+
+int main(int argc, char *argv[]){
+    int token;
+
+    /* Read file */
+    if (argc > 1){
+        yyin = fopen(argv[1], "r");
+        if (yyin == NULL){
+            perror ("Error opening file");
+            return -1;
+        }
+    }
+
+    yyparse();
+
+    fclose(yyin);
+    return 0;
+}
